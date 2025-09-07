@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ScanTech - Secure QR Code Scanner</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
     <style>
         :root {
             --primary-dark: #0d1b2a;
@@ -288,6 +289,10 @@
             object-fit: cover;
         }
 
+        #canvas {
+            display: none;
+        }
+
         .scanning-overlay {
             position: absolute;
             top: 0;
@@ -377,7 +382,7 @@
         }
 
         .upload-area:hover {
-            background: rgba(76, 201, 240, 0.05);
+            background: rgba(76, 201, 240, 0.1);
         }
 
         .upload-area i {
@@ -668,6 +673,21 @@
                 flex-direction: column;
             }
         }
+
+        /* Permission message */
+        .permission-message {
+            display: none;
+            background: rgba(244, 67, 54, 0.1);
+            border: 1px solid var(--accent-red);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+            color: var(--accent-red);
+        }
+
+        body.light .permission-message {
+            background: rgba(244, 67, 54, 0.05);
+        }
     </style>
 </head>
 <body>
@@ -714,9 +734,15 @@
                     </div>
                 </div>
 
+                <div class="permission-message" id="permission-message">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span>Camera access is required to scan QR codes. Please allow camera permissions when prompted.</span>
+                </div>
+
                 <div class="camera-scanner" id="camera-scanner">
                     <div id="video-container">
                         <video id="video" playsinline></video>
+                        <canvas id="canvas" width="800" height="600"></canvas>
                         <div class="scanning-overlay">
                             <div class="scanning-line"></div>
                         </div>
@@ -833,7 +859,7 @@
                     <ul>
                         <li><a href="#"><i class="fas fa-envelope"></i> support@scantech.com</a></li>
                         <li><a href="#"><i class="fas fa-phone"></i> +20 1208600243</a></li>
-                        <li><a href="#"><i classfas fa-map-marker-alt"></i> Cairo, Egypt</a></li>
+                        <li><a href="#"><i class="fas fa-map-marker-alt"></i> Cairo, Egypt</a></li>
                     </ul>
                 </div>
             </div>
@@ -869,17 +895,20 @@
             const cameraScanner = document.getElementById('camera-scanner');
             const fileUpload = document.getElementById('file-upload');
             const resultsSection = document.getElementById('results-section');
+            const permissionMessage = document.getElementById('permission-message');
             
             cameraOption.addEventListener('click', () => {
                 cameraScanner.style.display = 'flex';
                 fileUpload.style.display = 'none';
                 resultsSection.style.display = 'none';
+                permissionMessage.style.display = 'block';
             });
             
             uploadOption.addEventListener('click', () => {
                 fileUpload.style.display = 'flex';
                 cameraScanner.style.display = 'none';
                 resultsSection.style.display = 'none';
+                permissionMessage.style.display = 'none';
             });
             
             // File upload functionality
@@ -905,13 +934,13 @@
                 
                 if (e.dataTransfer.files.length) {
                     fileInput.files = e.dataTransfer.files;
-                    simulateScanResult();
+                    processQRCodeImage(fileInput.files[0]);
                 }
             });
             
             fileInput.addEventListener('change', () => {
                 if (fileInput.files.length) {
-                    simulateScanResult();
+                    processQRCodeImage(fileInput.files[0]);
                 }
             });
             
@@ -919,7 +948,10 @@
             const startCameraBtn = document.getElementById('start-camera');
             const stopCameraBtn = document.getElementById('stop-camera');
             const video = document.getElementById('video');
+            const canvas = document.getElementById('canvas');
+            const canvasContext = canvas.getContext('2d');
             let stream = null;
+            let scanningInterval = null;
             
             startCameraBtn.addEventListener('click', async () => {
                 try {
@@ -929,17 +961,20 @@
                     video.srcObject = stream;
                     startCameraBtn.disabled = true;
                     stopCameraBtn.disabled = false;
+                    permissionMessage.style.display = 'none';
                     
-                    // Simulate QR code detection after 3 seconds
-                    setTimeout(simulateScanResult, 3000);
+                    // Start scanning for QR codes
+                    scanningInterval = setInterval(scanQRCode, 500);
                 } catch (err) {
                     console.error("Error accessing camera:", err);
-                    alert("Unable to access camera. Please check permissions.");
+                    permissionMessage.innerHTML = `<i class="fas fa-exclamation-circle"></i> <span>Unable to access camera: ${err.message}. Please check permissions and try again.</span>`;
+                    permissionMessage.style.display = 'block';
                 }
             });
             
             stopCameraBtn.addEventListener('click', () => {
                 if (stream) {
+                    clearInterval(scanningInterval);
                     stream.getTracks().forEach(track => track.stop());
                     video.srcObject = null;
                     startCameraBtn.disabled = false;
@@ -947,26 +982,85 @@
                 }
             });
             
-            // Simulate scan results (for demonstration)
-            function simulateScanResult() {
+            // QR Code scanning function
+            function scanQRCode() {
+                if (video.readyState === video.HAVE_ENOUGH_DATA) {
+                    canvasContext.drawImage(video, 0, 0, canvas.width, canvas.height);
+                    const imageData = canvasContext.getImageData(0, 0, canvas.width, canvas.height);
+                    const code = jsQR(imageData.data, imageData.width, imageData.height, {
+                        inversionAttempts: "dontInvert",
+                    });
+                    
+                    if (code) {
+                        // Draw a rectangle around the QR code
+                        canvasContext.strokeStyle = '#4caf50';
+                        canvasContext.lineWidth = 4;
+                        canvasContext.strokeRect(
+                            code.location.topLeftCorner.x, 
+                            code.location.topLeftCorner.y,
+                            code.location.bottomRightCorner.x - code.location.topLeftCorner.x,
+                            code.location.bottomRightCorner.y - code.location.topLeftCorner.y
+                        );
+                        
+                        // Process the scanned QR code
+                        processScannedURL(code.data);
+                    }
+                }
+            }
+            
+            // Process QR code from image file
+            function processQRCodeImage(file) {
+                const img = new Image();
+                img.onload = function() {
+                    canvasContext.clearRect(0, 0, canvas.width, canvas.height);
+                    canvasContext.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    const imageData = canvasContext.getImageData(0, 0, canvas.width, canvas.height);
+                    const code = jsQR(imageData.data, imageData.width, canvas.height, {
+                        inversionAttempts: "dontInvert",
+                    });
+                    
+                    if (code) {
+                        processScannedURL(code.data);
+                    } else {
+                        alert('No QR code found in the image. Please try another image.');
+                    }
+                };
+                img.src = URL.createObjectURL(file);
+            }
+            
+            // Process the scanned URL and display security analysis
+            function processScannedURL(url) {
+                // Stop camera if it's running
+                if (stream) {
+                    clearInterval(scanningInterval);
+                    stream.getTracks().forEach(track => track.stop());
+                    video.srcObject = null;
+                    startCameraBtn.disabled = false;
+                    stopCameraBtn.disabled = true;
+                }
+                
+                // Show results section
                 resultsSection.style.display = 'block';
                 
-                // Randomize results for demonstration
-                const isSafe = Math.random() > 0.3;
-                const isWarning = !isSafe && Math.random() > 0.5;
+                // Perform security analysis
+                performSecurityAnalysis(url);
                 
+                // Scroll to results
+                resultsSection.scrollIntoView({ behavior: 'smooth' });
+            }
+            
+            // Perform security analysis on the URL
+            function performSecurityAnalysis(url) {
                 const statusIcon = document.getElementById('status-icon');
                 const statusText = document.getElementById('status-text');
                 const securityScore = document.getElementById('security-score');
                 const scannedUrl = document.getElementById('scanned-url');
                 
-                // Generate a random URL for demonstration
-                const domains = ['example.com', 'test-site.net', 'secure-portal.org', 'service-platform.com'];
-                const paths = ['login', 'dashboard', 'profile', 'checkout', 'verify'];
-                const randomDomain = domains[Math.floor(Math.random() * domains.length)];
-                const randomPath = paths[Math.floor(Math.random() * paths.length)];
+                scannedUrl.textContent = url;
                 
-                scannedUrl.textContent = `https://${randomDomain}/${randomPath}`;
+                // Simulate security analysis based on URL content
+                const isSafe = !url.includes('phishing') && !url.includes('malware') && !url.includes('hack');
+                const isWarning = url.includes('login') || url.includes('bank') || url.includes('secure');
                 
                 if (isSafe) {
                     statusIcon.innerHTML = '<i class="fas fa-shield-alt"></i>';
@@ -987,9 +1081,6 @@
                     securityScore.innerHTML = '<span class="score-value">30%</span> Dangerous';
                     securityScore.style.color = '#f44336';
                 }
-                
-                // Scroll to results
-                resultsSection.scrollIntoView({ behavior: 'smooth' });
             }
             
             // Action buttons
@@ -997,8 +1088,10 @@
             const blockBtn = document.getElementById('block-btn');
             
             proceedBtn.addEventListener('click', () => {
-                alert('Proceeding to website. Always be cautious when visiting unfamiliar sites.');
+                const url = document.getElementById('scanned-url').textContent;
+                alert(`Proceeding to website: ${url}\n\nAlways be cautious when visiting unfamiliar sites.`);
                 // In a real implementation, this would redirect to the scanned URL
+                // window.location.href = url;
             });
             
             blockBtn.addEventListener('click', () => {
@@ -1008,5 +1101,4 @@
         });
     </script>
 </body>
-
 </html>
