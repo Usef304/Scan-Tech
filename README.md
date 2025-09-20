@@ -20,11 +20,6 @@ A Flask-based web application for scanning and analyzing QR codes with security 
    - `REDIS_URL`: Redis connection URL (optional, for caching)
 4. Run the application: `python run.py`
 
-## Using Docker
-
-1. Build and run with Docker Compose: `docker-compose up --build`
-2. Access the application at http://localhost:5000
-
 ## API Key Setup
 
 1. Sign up for a VirusTotal account at https://www.virustotal.com/
@@ -37,3 +32,4 @@ For development with hot reloading:
 ```bash
 
 FLASK_DEBUG=1 python run.py
+
