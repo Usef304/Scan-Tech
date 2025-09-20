@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ScanTech - Secure QR Code Generator & Scanner</title>
+  <meta name="description" content="Generate and scan secure QR codes instantly with ScanTech. Advanced security features and phishing detection.">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+  <header>
+    <div class="logo">
+      <img src="{{ url_for('static', filename='images/logo.png') }}" alt="ScanTech Logo" width="90">
+    </div>
+    <nav aria-label="Main navigation">
+      <ul>
+        <li><a href="{{ url_for('main.home') }}" aria-current="page">Home</a></li>
+        <li><a href="{{ url_for('main.scan') }}">Scan</a></li>
+        <li><a href="{{ url_for('main.about') }}">About</a></li>
+      </ul>
+    </nav>
+    <div>
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark/light mode">🌙</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="container">
+        <div class="hero-content">
+          <div class="hero-text">
+            <h1>Generate & Scan QR Codes <span>Instantly</span></h1>
+            <p>The fastest, most secure QR code generator and scanner. Create and analyze QR codes with advanced security features and phishing detection.</p>
+            <div class="hero-buttons">
+              <button class="btn btn-primary">Generate QR Code</button>
+              <a href="{{ url_for('main.scan') }}" class="btn btn-secondary">Scan QR Code</a>
+            </div>
+            <div class="hero-features">
+              <span>✅ Free Forever</span>
+              <span>✅ No Registration</span>
+              <span>✅ Secure & Private</span>
+            </div>
+          </div>
+          <div class="hero-image">
+            <div class="qr-preview">
+              <h3>QR Code Preview</h3>
+              <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=ScanTech" alt="QR Code Example">
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="how-it-works">
+      <div class="container">
+        <h2>How It Works</h2>
+        <p class="section-description">Generate and scan professional QR codes in three simple steps</p>
+        <div class="steps">
+          <div class="step">
+            <div class="step-number">01</div>
+            <h3>Choose QR Type</h3>
+            <p>Select from 12+ QR code types including text, URL, WiFi, contact info, and more.</p>
+          </div>
+          <div class="step">
+            <div class="step-number">02</div>
+            <h3>Generate or Scan</h3>
+            <p>Create QR codes with our forms or scan existing codes with your camera or files.</p>
+          </div>
+          <div class="step">
+            <div class="step-number">03</div>
+            <h3>Secure & Download</h3>
+            <p>Get security-verified QR codes instantly with download options and phishing protection.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="cta-section">
+      <div class="container">
+        <h2>Ready to Create or Scan QR Codes?</h2>
+        <p>Join thousands of users who trust ScanTech for their QR code needs</p>
+        <a href="{{ url_for('main.scan') }}" class="btn btn-primary btn-large">Scan QR Code Now</a>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer-top">
+      <div class="container">
+        <div class="footer-column">
+          <h3>ScanTech</h3>
+          <p>The fastest and most secure QR code generator and scanner. Create and analyze QR codes for any purpose with advanced security features.</p>
+        </div>
+        <div class="footer-column">
+          <h3>Quick Links</h3>
+          <ul>
+            <li><a href="{{ url_for('main.home') }}">Home</a></li>
+            <li><a href="{{ url_for('main.scan') }}">Scan QR Code</a></li>
+            <li><a href="{{ url_for('main.about') }}">About Us</a></li>
+          </ul>
+        </div>
+        <div class="footer-column">
+          <h3>Contact</h3>
+          <p><span aria-hidden="true">📧</span> support@scantech.com</p>
+          <p><span aria-hidden="true">📞</span> +20 1208600243</p>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div class="container">
+        <p>&copy; 2025 ScanTech. All rights reserved. | Built with security and privacy in mind.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>

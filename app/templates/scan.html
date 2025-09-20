@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+
+{% block title %}Scan QR Code - ScanTech{% endblock %}
+{% block description %}Scan QR codes using your camera, upload files, or connect external scanners{% endblock %}
+
+{% block extra_css %}
+<style>
+  .loading {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(255,255,255,.3);
+    border-radius: 50%;
+    border-top-color: #fff;
+    animation: spin 1s ease-in-out infinite;
+  }
+  
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="scan-container">
+  <div class="scan-header">
+    <h1>Scan QR Code</h1>
+    <p>Scan QR codes using your camera or upload files</p>
+  </div>
+
+  <div class="scan-methods">
+    <div class="scan-method" onclick="showCameraScanner()">
+      <span class="method-icon">📷</span>
+      <h3 class="method-title">Camera</h3>
+      <p class="method-description">Use your device camera to scan QR codes in real-time</p>
+      <button class="btn btn-primary">Use Camera</button>
+    </div>
+
+    <div class="scan-method" onclick="showFileUpload()">
+      <span class="method-icon">📁</span>
+      <h3 class="method-title">Upload File</h3>
+      <p class="method-description">Upload QR code images from your device</p>
+      <button class="btn btn-primary">Upload File</button>
+    </div>
+  </div>
+
+  <!-- Camera Scanner Section -->
+  <div id="cameraScanner" class="camera-container" style="display: none;">
+    <h2>Scan from Camera</h2>
+    <p>Use your device camera to scan QR codes in real-time</p>
+    
+    <div class="video-container">
+      <video id="video" autoplay playsinline></video>
+      <div class="scan-frame"></div>
+    </div>
+    
+    <div id="cameraError" class="camera-error">
+      <p>Unable to access camera. Please check permissions and try again.</p>
+    </div>
+    
+    <div class="permission-note">
+      <p>Camera permissions required to scan QR codes</p>
+    </div>
+    
+    <div class="camera-controls">
+      <button id="startCamera" class="btn btn-primary" onclick="initCamera()">
+        Start Scanner
+      </button>
+      <button id="stopCamera" class="btn btn-secondary" onclick="stopCamera()" style="display: none;">
+        Stop Scanner
+      </button>
+      <button id="switchCamera" class="btn btn-secondary" onclick="switchCamera()" style="display: none;">
+        Switch Camera
+      </button>
+    </div>
+  </div>
+
+  <!-- File Upload Section -->
+<!-- Replace the file upload section with this: -->
+<div id="fileUpload" class="camera-container" style="display: none;">
+    <h2>Upload QR Code Image</h2>
+    <p>Select a QR code image from your device</p>
+    
+    <form method="post" action="{{ url_for('main.analyze_qr') }}" enctype="multipart/form-data" class="upload-form" id="uploadForm">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        
+        <!-- Fix: Remove onclick from div and handle via JS -->
+        <div class="upload-area" id="uploadArea">
+            <span class="upload-icon">📁</span>
+            <span class="upload-text">Click to select or drag & drop QR code image</span>
+            <span class="upload-subtext">Supports: PNG, JPG, GIF • Max 5MB</span>
+        </div>
+        
+        <input type="file" id="file" name="file" accept="image/*" required hidden>
+        
+        <div class="camera-controls">
+            <button type="submit" class="btn btn-primary" id="analyzeBtn" disabled>
+                <span id="analyzeText">Analyze QR Code</span>
+                <span id="analyzeLoading" class="loading" style="display: none;"></span>
+            </button>
+        </div>
+    </form>
+</div>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="flash-messages">
+        {% for category, message in messages %}
+          <div class="flash-message {{ category }}">
+            <i class="flash-icon">⚠️</i> {{ message }}
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+</div>
+
+<!-- Scanning Overlay -->
+<div class="scanning-overlay" id="scanningOverlay">
+  <div class="scanning-animation"></div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+<script src="{{ url_for('static', filename='js/scan.js') }}"></script>
+<script>
+  // Initialize form
+  document.getElementById('uploadForm').addEventListener('submit', function(e) {
+    document.getElementById('analyzeText').style.display = 'none';
+    document.getElementById('analyzeLoading').style.display = 'inline-block';
+    document.getElementById('analyzeBtn').disabled = true;
+  });
+
+  // Handle file selection
+  function handleFileSelect(input) {
+    if (input.files && input.files[0]) {
+      const fileName = input.files[0].name;
+      document.querySelector('.upload-text').textContent = fileName;
+      document.getElementById('uploadArea').classList.add('file-selected');
+      document.getElementById('analyzeBtn').disabled = false;
+    }
+  }
+</script>
+{% endblock %}

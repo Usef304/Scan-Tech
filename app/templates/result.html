@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Scan Results - ScanTech</title>
+  <meta name="description" content="QR code security analysis results from ScanTech">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+  <style>
+    /* Binary score styles */
+    .score-value[style*="color: #4caf50"] {
+        font-weight: bold;
+        text-shadow: 0 0 10px rgba(76, 175, 80, 0.3);
+    }
+
+    .score-value[style*="color: #f44336"] {
+        font-weight: bold;
+        text-shadow: 0 0 10px rgba(244, 67, 54, 0.3);
+    }
+
+    .circle[style*="stroke: #4caf50"] {
+        filter: drop-shadow(0 0 4px rgba(76, 175, 80, 0.6));
+    }
+
+    .circle[style*="stroke: #f44336"] {
+        filter: drop-shadow(0 0 3px rgba(244, 67, 54, 0.5));
+    }
+
+
+    .result-container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+    
+    .security-score {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    
+    .score-circle {
+      width: 150px;
+      height: 150px;
+      margin: 0 auto 20px;
+      position: relative;
+    }
+    
+    .circular-chart {
+      width: 150px;
+      height: 150px;
+      transform: rotate(-90deg);
+    }
+    
+    .circle-bg {
+      fill: none;
+      stroke: var(--border-color);
+      stroke-width: 3.8;
+    }
+    
+    .circle {
+      fill: none;
+      stroke-width: 3.8;
+      stroke-linecap: round;
+      transition: stroke 0.5s ease, filter 0.5s ease;
+    }
+    
+    .score-value {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 2.5rem;
+      font-weight: bold;
+      transition: color 0.5s ease, text-shadow 0.5s ease;
+    }
+    
+    .score-value[style*="color: #4caf50"],
+    .text-safe {
+    font-weight: bold;
+    text-shadow: 0 0 8px rgba(76, 175, 80, 0.4);
+    }
+    
+    .circle-caution {
+      stroke: #ffc107;
+    }
+    
+    .circle-unsafe {
+      stroke: #f44336;
+    }
+    
+    .text-safe {
+      color: #4caf50;
+    }
+    
+    .score-value[style*="color: #ffc107"],
+    .text-caution {
+    font-weight: bold;
+    text-shadow: 0 0 8px rgba(255, 193, 7, 0.4);
+      color: #ffc107;
+    }
+
+    .circle[style*="stroke: #ffc107"] {
+    filter: drop-shadow(0 0 4px rgba(255, 193, 7, 0.6));
+    }
+    .text-unsafe {
+      color: #f44336;
+    }
+    
+    .verdict-badge {
+      display: inline-block;
+      padding: 10px 25px;
+      border-radius: 25px;
+      font-weight: bold;
+      font-size: 1.2rem;
+      margin-top: 15px;
+    }
+    
+    .verdict-safe {
+      background: rgba(76, 175, 80, 0.2);
+      color: #4caf50;
+    }
+    
+    .verdict-caution {
+      background: rgba(255, 193, 7, 0.2);
+      color: #ffc107;
+    }
+    
+    .verdict-unsafe {
+      background: rgba(244, 67, 54, 0.2);
+      color: #f44336;
+    }
+    
+    .verdict-no-data {
+      background: rgba(158, 158, 158, 0.2);
+      color: #9e9e9e;
+    }
+    
+    .url-display {
+      background: var(--bg-secondary);
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 30px;
+      word-break: break-all;
+    }
+    
+    .url-text {
+      font-family: monospace;
+      background: rgba(0, 0, 0, 0.1);
+      padding: 10px;
+      border-radius: 5px;
+      margin: 10px 0;
+      overflow-x: auto;
+    }
+    
+    .warning-note {
+      background: rgba(255, 193, 7, 0.1);
+      border: 1px solid rgba(255, 193, 7, 0.3);
+      padding: 15px;
+      border-radius: 8px;
+      margin-top: 15px;
+      text-align: center;
+    }
+    
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 20px;
+      margin: 40px 0;
+    }
+    
+    .stat-card {
+      background: var(--bg-secondary);
+      padding: 25px;
+      border-radius: 12px;
+      text-align: center;
+    }
+    
+    .stat-value {
+      font-size: 2.5rem;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+    
+    .stat-label {
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+    
+    .stat-malicious .stat-value {
+      color: #f44336;
+    }
+    
+    .stat-suspicious .stat-value {
+      color: #ffc107;
+    }
+    
+    .stat-harmless .stat-value {
+      color: #4caf50;
+    }
+    
+    .stat-undetected .stat-value {
+      color: #9e9e9e;
+    }
+    
+    .action-buttons {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+      margin-top: 40px;
+      flex-wrap: wrap;
+    }
+    
+    .btn-icon {
+      margin-right: 8px;
+    }
+    
+    .text-center {
+      text-align: center;
+    }
+    
+    .security-details {
+      background: var(--bg-secondary);
+      padding: 25px;
+      border-radius: 12px;
+      margin: 30px 0;
+    }
+    
+    .detail-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border-color);
+    }
+    
+    .detail-item:last-child {
+      border-bottom: none;
+    }
+    
+    .detail-label {
+      font-weight: 500;
+    }
+    
+    .detail-value {
+      color: var(--text-secondary);
+    }
+    
+    .scan-again {
+      text-align: center;
+      margin-top: 30px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border-color);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">
+      <img src="{{ url_for('static', filename='images/logo.png') }}" alt="ScanTech Logo" width="90">
+    </div>
+    <nav aria-label="Main navigation">
+      <ul>
+        <li><a href="{{ url_for('main.home') }}">Home</a></li>
+        <li><a href="{{ url_for('main.scan') }}">Scan</a></li>
+        <li><a href="{{ url_for('main.about') }}">About</a></li>
+      </ul>
+    </nav>
+    <div>
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark/light mode">🌙</button>
+    </div>
+  </header>
+
+  <main class="result-container">
+    <div class="security-score">
+        <div class="score-circle">
+            <svg viewBox="0 0 36 36" class="circular-chart">
+                <path class="circle-bg"
+                    d="M18 2.0845
+                      a 15.9155 15.9155 0 0 1 0 31.831
+                      a 15.9155 15.9155 0 0 1 0 -31.831"
+                />
+                <path class="circle"
+                    d="M18 2.0845
+                      a 15.9155 15.9155 0 0 1 0 31.831
+                      a 15.9155 15.9155 0 0 1 0 -31.831"
+                />
+            </svg>
+            <div class="score-value">{{ safety_score|int }}%</div>
+        </div>
+        
+        <!-- Simple binary verdict display -->
+        {% if safety_score == 100 %}
+            <div class="verdict-badge verdict-safe">SAFE</div>
+        {% else %}
+            <div class="verdict-badge verdict-unsafe">Dangerous</div>
+        {% endif %}
+    </div>
+
+    <div class="url-display">
+      <h3>Scanned URL</h3>
+      <div class="url-text">{{ url }}</div>
+      <div class="warning-note">
+        <i class="warning-icon">⚠️</i> Always exercise caution when visiting unknown URLs
+      </div>
+    </div>
+
+    <h2 class="text-center">Security Analysis</h2>
+    
+    <div class="security-details">
+      <div class="detail-item">
+        <span class="detail-label">Total Scanners:</span>
+        <span class="detail-value">{{ (stats.get('malicious', 0) + stats.get('suspicious', 0) + stats.get('harmless', 0) + stats.get('undetected', 0)) }}</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label">Last Scanned:</span>
+        <span class="detail-value">Just now</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label">Safety Score:</span>
+        <span class="detail-value">{{ safety_score|int }}%</span>
+      </div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card stat-malicious">
+        <div class="stat-value">{{ stats.get('malicious', 0) }}</div>
+        <div class="stat-label">Malicious</div>
+      </div>
+      <div class="stat-card stat-suspicious">
+        <div class="stat-value">{{ stats.get('suspicious', 0) }}</div>
+        <div class="stat-label">Suspicious</div>
+      </div>
+      <div class="stat-card stat-harmless">
+        <div class="stat-value">{{ stats.get('harmless', 0) }}</div>
+        <div class="stat-label">Harmless</div>
+      </div>
+      <div class="stat-card stat-undetected">
+        <div class="stat-value">{{ stats.get('undetected', 0) }}</div>
+        <div class="stat-label">Undetected</div>
+      </div>
+    </div>
+
+    <div class="action-buttons">
+      <a href="{{ url_for('main.scan') }}" class="btn btn-primary">
+        <i class="btn-icon">↺</i> Scan Another QR
+      </a>
+      {% if url.startswith('http') %}
+      <a href="{{ url }}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary">
+        <i class="btn-icon">🌐</i> Visit URL (Caution)
+      </a>
+      {% endif %}
+      <a href="{{ url_for('main.home') }}" class="btn">
+        <i class="btn-icon">🏠</i> Back to Home
+      </a>
+    </div>
+
+    <div class="scan-again">
+      <p>Found this useful? Scan another QR code to continue protecting yourself online.</p>
+      <a href="{{ url_for('main.scan') }}" class="btn btn-primary">
+        <i class="btn-icon">🔍</i> Scan Another QR Code
+      </a>
+    </div>
+  </main>
+
+  <footer>
+    <div class="footer-top">
+      <div class="container">
+        <div class="footer-column">
+          <h3>ScanTech</h3>
+          <p>The fastest and most secure QR code generator and scanner. Create and analyze QR codes for any purpose with advanced security features.</p>
+        </div>
+        <div class="footer-column">
+          <h3>Quick Links</h3>
+          <ul>
+            <li><a href="{{ url_for('main.home') }}">Home</a></li>
+            <li><a href="{{ url_for('main.scan') }}">Scan QR Code</a></li>
+            <li><a href="{{ url_for('main.about') }}">About Us</a></li>
+          </ul>
+        </div>
+        <div class="footer-column">
+          <h3>Contact</h3>
+          <p><span aria-hidden="true">📧</span> support@scantech.com</p>
+          <p><span aria-hidden="true">📞</span> +20 1208600243</p>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div class="container">
+        <p>&copy; 2025 ScanTech. All rights reserved. | Built with security and privacy in mind.</p>
+      </div>
+    </div>
+  </footer>
+
+ <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const safetyScore = { safety_score };
+        const verdict = "{{ verdict }}";
+        const circle = document.querySelector('.circle');
+        const scoreValue = document.querySelector('.score-value');
+        const verdictBadge = document.querySelector('.verdict-badge');
+        
+        // Calculate proper stroke-dasharray for the circle
+        const radius = 15.9155;
+        const circumference = 2 * Math.PI * radius;
+        const dashoffset = circumference - (safetyScore / 100 * circumference);
+        
+        // Set the stroke dash properties
+        circle.style.strokeDasharray = circumference + ' ' + circumference;
+        circle.style.strokeDashoffset = dashoffset;
+        
+        // FLEXIBLE COLOR SYSTEM based on safety score
+        let circleColor;
+        let textColor;
+        let badgeBackground;
+        let badgeColor;
+        let emoji = '';
+        
+        if (safetyScore >= 80) {
+            // HIGH SAFETY (80-100%) = Green
+            circleColor = '#4caf50';
+            textColor = '#4caf50';
+            badgeBackground = 'rgba(76, 175, 80, 0.2)';
+            badgeColor = '#4caf50';
+            emoji = '🟢 ';
+        } else if (safetyScore >= 50) {
+            // MEDIUM SAFETY (50-79%) = Yellow
+            circleColor = '#ffc107';
+            textColor = '#ffc107';
+            badgeBackground = 'rgba(255, 193, 7, 0.2)';
+            badgeColor = '#ffc107';
+            emoji = '🟡 ';
+        } else if (safetyScore >= 20) {
+            // LOW SAFETY (20-49%) = Orange
+            circleColor = '#ff9800';
+            textColor = '#ff9800';
+            badgeBackground = 'rgba(255, 152, 0, 0.2)';
+            badgeColor = '#ff9800';
+            emoji = '🟠 ';
+        } else {
+            // VERY LOW SAFETY (0-19%) = Red
+            circleColor = '#f44336';
+            textColor = '#f44336';
+            badgeBackground = 'rgba(244, 67, 54, 0.2)';
+            badgeColor = '#f44336';
+            emoji = '🔴 ';
+        }
+        
+        // Apply colors
+        circle.style.stroke = circleColor;
+        scoreValue.style.color = textColor;
+        
+        // Update verdict badge to match the score color
+        if (verdictBadge) {
+            verdictBadge.style.background = badgeBackground;
+            verdictBadge.style.color = badgeColor;
+            verdictBadge.style.border = `1px solid ${badgeColor}30`;
+            
+            // Add emoji based on safety level
+            verdictBadge.innerHTML = emoji + verdictBadge.textContent;
+        }
+        
+        // Add glow effects based on score
+        if (safetyScore >= 80) {
+            circle.style.filter = 'drop-shadow(0 0 4px rgba(76, 175, 80, 0.6))';
+            scoreValue.style.textShadow = '0 0 8px rgba(76, 175, 80, 0.4)';
+        } else if (safetyScore >= 50) {
+            circle.style.filter = 'drop-shadow(0 0 4px rgba(255, 193, 7, 0.6))';
+            scoreValue.style.textShadow = '0 0 8px rgba(255, 193, 7, 0.4)';
+        } else if (safetyScore >= 20) {
+            circle.style.filter = 'drop-shadow(0 0 4px rgba(255, 152, 0, 0.6))';
+            scoreValue.style.textShadow = '0 0 8px rgba(255, 152, 0, 0.4)';
+        } else {
+            circle.style.filter = 'drop-shadow(0 0 4px rgba(244, 67, 54, 0.6))';
+            scoreValue.style.textShadow = '0 0 8px rgba(244, 67, 54, 0.4)';
+        }
+        
+        // Animate stats cards
+        const statCards = document.querySelectorAll('.stat-card');
+        statCards.forEach((card, index) => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(20px)';
+            
+            setTimeout(() => {
+                card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+                card.style.opacity = '1';
+                card.style.transform = 'translateY(0)';
+            }, 200 + (index * 100));
+        });
+        
+        console.log('Safety Score:', safetyScore, 'Verdict:', verdict);
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}ScanTech - Secure QR Code Scanner{% endblock %}</title>
+  <meta name="description" content="{% block description %}Generate and scan secure QR codes instantly with ScanTech. Advanced security features and phishing detection.{% endblock %}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+  <header>
+    <div class="logo">
+      <img src="{{ url_for('static', filename='images/logo.png') }}" alt="ScanTech Logo" width="90">
+    </div>
+    <nav aria-label="Main navigation">
+      <ul>
+        <li><a href="{{ url_for('main.home') }}" {% if request.path == url_for('main.home') %}aria-current="page"{% endif %}>Home</a></li>
+        <li><a href="{{ url_for('main.scan') }}" {% if request.path == url_for('main.scan') %}aria-current="page"{% endif %}>Scan</a></li>
+        <li><a href="{{ url_for('main.about') }}" {% if request.path == url_for('main.about') %}aria-current="page"{% endif %}>About</a></li>
+      </ul>
+    </nav>
+    <div>
+      <button class="theme-toggle" id="themeToggle" aria-pressed="false" aria-label="Toggle dark mode">
+        <span class="theme-icon">🌙</span>
+      </button>
+    </div>
+  </header>
+
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer>
+    <div class="footer-top">
+      <div class="container">
+        <div class="footer-column">
+          <h3>ScanTech</h3>
+          <p>The fastest and most secure QR code generator and scanner. Create and analyze QR codes for any purpose with advanced security features.</p>
+        </div>
+        <div class="footer-column">
+          <h3>Quick Links</h3>
+          <ul>
+            <li><a href="{{ url_for('main.home') }}">Home</a></li>
+            <li><a href="{{ url_for('main.scan') }}">Scan QR Code</a></li>
+            <li><a href="{{ url_for('main.about') }}">About Us</a></li>
+          </ul>
+        </div>
+        <div class="footer-column">
+          <h3>Contact</h3>
+          <p><span aria-hidden="true">📧</span> support@scantech.com</p>
+          <p><span aria-hidden="true">📞</span> +20 1208600243</p>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div class="container">
+        <p>&copy; 2025 ScanTech. All rights reserved. | Built with security and privacy in mind.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>
