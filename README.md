@@ -35,4 +35,5 @@ A Flask-based web application for scanning and analyzing QR codes with security 
 
 For development with hot reloading:
 ```bash
+
 FLASK_DEBUG=1 python run.py
