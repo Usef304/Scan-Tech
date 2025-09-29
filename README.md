@@ -13,12 +13,12 @@ A Flask-based web application for scanning and analyzing QR codes with security 
 ## Installation
 
 1. Clone the repository
-2. Install dependencies: `pip install -r requirements.txt`
-3. Copy `.env.example` to `.env` and configure your settings:
-   - `SECRET_KEY`: Flask secret key
+2. Create virtual environment `python -m venv venv`
+3. Activate it `venv\Scripts\activate`
+4. Install dependencies: `pip install -r requirements.txt`
+5. Copy `.env.example` to `.env` and configure your settings:
    - `VT_API_KEY`: VirusTotal API key
-   - `REDIS_URL`: Redis connection URL (optional, for caching)
-4. Run the application: `python run.py`
+6. Run the application: `python run.py`
 
 ## API Key Setup
 
@@ -32,4 +32,5 @@ For development with hot reloading:
 ```bash
 
 FLASK_DEBUG=1 python run.py
+
 
