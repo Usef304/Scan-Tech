@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>فحص رابط مباشر - ماسح أمان رمز QR</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <h1><i class="fas fa-qrcode"></i> ماسح أمان رمز QR</h1>
+            <div class="nav-links">
+                <a href="/"><i class="fas fa-home"></i> الرئيسية</a>
+                <a href="/scan"><i class="fas fa-camera"></i> مسح QR</a>
+                <a href="/manual" class="active"><i class="fas fa-link"></i> فحص رابط</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container manual-container">
+        <div class="manual-header">
+            <h2><i class="fas fa-link"></i> فحص رابط مباشر</h2>
+            <p>أدخل الرابط الذي تريد فحصه يدوياً</p>
+        </div>
+
+        <div class="url-input-section">
+            <div class="input-group">
+                <div class="input-icon">
+                    <i class="fas fa-globe"></i>
+                </div>
+                <input type="url" id="url-input" placeholder="https://example.com" required>
+                <button id="scan-url" class="btn btn-primary">
+                    <i class="fas fa-shield-alt"></i> فحص الأمان
+                </button>
+            </div>
+            <div class="input-hint">
+                <p><i class="fas fa-info-circle"></i> تأكد من إدخال الرابط الكامل مع https:// أو http://</p>
+            </div>
+        </div>
+
+        <!-- Example URLs -->
+        <div class="examples-section">
+            <h3><i class="fas fa-lightbulb"></i> أمثلة للاختبار:</h3>
+            <div class="examples-grid">
+                <div class="example-card">
+                    <h4>روابط آمنة:</h4>
+                    <ul>
+                        <li><a href="#" class="example-link" data-url="https://www.google.com">https://www.google.com</a></li>
+                        <li><a href="#" class="example-link" data-url="https://www.github.com">https://www.github.com</a></li>
+                        <li><a href="#" class="example-link" data-url="https://www.wikipedia.org">https://www.wikipedia.org</a></li>
+                    </ul>
+                </div>
+                <div class="example-card">
+                    <h4>روابط للفحص:</h4>
+                    <ul>
+                        <li><a href="#" class="example-link" data-url="http://httpforever.com">http://httpforever.com</a></li>
+                        <li><a href="#" class="example-link" data-url="http://testphp.vulnweb.com">http://testphp.vulnweb.com</a></li>
+                        <li><a href="#" class="example-link" data-url="http://example.com">http://example.com</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading Overlay -->
+        <div id="loading-overlay" class="loading-overlay" style="display: none;">
+            <div class="loading-content">
+                <div class="spinner"></div>
+                <h3>جاري فحص الرابط...</h3>
+                <div class="loading-steps">
+                    <div class="loading-step">
+                        <i class="fas fa-search"></i>
+                        <span>جاري تحليل الرابط</span>
+                    </div>
+                    <div class="loading-step">
+                        <i class="fas fa-shield-alt"></i>
+                        <span>فحص قواعد البيانات الأمنية</span>
+                    </div>
+                    <div class="loading-step">
+                        <i class="fas fa-chart-bar"></i>
+                        <span>توليد التقرير</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results -->
+        <div id="scan-results" class="scan-results" style="display: none;">
+            <h3><i class="fas fa-chart-bar"></i> نتائج فحص الرابط</h3>
+            <div class="results-content" id="results-content"></div>
+            <div class="results-actions">
+                <button id="new-scan" class="btn btn-secondary">
+                    <i class="fas fa-redo"></i> فحص رابط جديد
+                </button>
+                <button id="view-details" class="btn btn-primary">
+                    <i class="fas fa-file-alt"></i> عرض التقرير الكامل
+                </button>
+            </div>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="quick-stats">
+            <h3><i class="fas fa-tachometer-alt"></i> إحصائيات سريعة</h3>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <i class="fas fa-clock"></i>
+                    <span>مدة الفحص:</span>
+                    <strong>2-5 ثواني</strong>
+                </div>
+                <div class="stat-item">
+                    <i class="fas fa-database"></i>
+                    <span>قواعد بيانات:</span>
+                    <strong>4 مصادر</strong>
+                </div>
+                <div class="stat-item">
+                    <i class="fas fa-check-circle"></i>
+                    <span>فحوصات:</span>
+                    <strong>9 فحوصات</strong>
+                </div>
+                <div class="stat-item">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>دقة:</span>
+                    <strong>95%</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 ماسح أمان رمز QR. جميع الحقوق محفوظة.</p>
+            <p>هذه الأداة للأغراض التعليمية والأمنية فقط.</p>
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlInput = document.getElementById('url-input');
+            const scanBtn = document.getElementById('scan-url');
+            const loadingOverlay = document.getElementById('loading-overlay');
+            const resultsDiv = document.getElementById('scan-results');
+            const resultsContent = document.getElementById('results-content');
+            
+            // Example links
+            document.querySelectorAll('.example-link').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    urlInput.value = this.getAttribute('data-url');
+                });
+            });
+            
+            // Scan URL
+            scanBtn.addEventListener('click', function() {
+                const url = urlInput.value.trim();
+                
+                if (!url) {
+                    alert('يرجى إدخال رابط للفحص');
+                    return;
+                }
+                
+                // Show loading
+                loadingOverlay.style.display = 'flex';
+                resultsDiv.style.display = 'none';
+                
+                // Send request
+                fetch('/api/check_url', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ url: url })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // Hide loading
+                    loadingOverlay.style.display = 'none';
+                    
+                    if (data.success) {
+                        // Show results
+                        displayResults(data);
+                        resultsDiv.style.display = 'block';
+                        
+                        // Set view details button
+                        document.getElementById('view-details').onclick = function() {
+                            window.location.href = `/report/${data.scan_id}`;
+                        };
+                    } else {
+                        alert('خطأ: ' + data.error);
+                    }
+                })
+                .catch(error => {
+                    loadingOverlay.style.display = 'none';
+                    alert('حدث خطأ أثناء الفحص: ' + error.message);
+                });
+            });
+            
+            // New scan button
+            document.getElementById('new-scan')?.addEventListener('click', function() {
+                urlInput.value = '';
+                resultsDiv.style.display = 'none';
+                urlInput.focus();
+            });
+            
+            // Enter key to scan
+            urlInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    scanBtn.click();
+                }
+            });
+            
+            function displayResults(data) {
+                const result = data.result;
+                const score = result.security_score || 0;
+                const riskLevel = result.risk_level || 'Unknown';
+                
+                let resultHTML = `
+                    <div class="result-summary">
+                        <div class="score-circle score-${getScoreClass(score)}">
+                            <span class="score-value">${score}%</span>
+                            <span class="score-label">درجة الأمان</span>
+                        </div>
+                        <div class="result-details">
+                            <h4>${data.url}</h4>
+                            <div class="risk-level risk-${riskLevel.toLowerCase()}">
+                                مستوى الخطورة: ${riskLevel}
+                            </div>
+                            <div class="result-status ${result.is_safe ? 'safe' : 'danger'}">
+                                <i class="fas fa-${result.is_safe ? 'check-circle' : 'exclamation-triangle'}"></i>
+                                ${result.is_safe ? 'الرابط آمن' : 'تم اكتشاف تهديدات'}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                // Add threats if any
+                if (result.threats && result.threats.length > 0) {
+                    resultHTML += `
+                        <div class="threats-section">
+                            <h4><i class="fas fa-exclamation-triangle"></i> التهديدات المكتشفة:</h4>
+                            <ul class="threats-list">
+                                ${result.threats.map(threat => `<li>${threat}</li>`).join('')}
+                            </ul>
+                        </div>
+                    `;
+                }
+                
+                // Add warnings if any
+                if (result.warnings && result.warnings.length > 0) {
+                    resultHTML += `
+                        <div class="warnings-section">
+                            <h4><i class="fas fa-exclamation-circle"></i> تحذيرات:</h4>
+                            <ul class="warnings-list">
+                                ${result.warnings.map(warning => `<li>${warning}</li>`).join('')}
+                            </ul>
+                        </div>
+                    `;
+                }
+                
+                resultsContent.innerHTML = resultHTML;
+            }
+            
+            function getScoreClass(score) {
+                if (score >= 80) return 'high';
+                if (score >= 60) return 'medium';
+                if (score >= 40) return 'low';
+                return 'critical';
+            }
+        });
+    </script>
+</body>
+</html>

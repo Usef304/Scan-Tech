@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ماسح أمان رمز QR</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <h1><i class="fas fa-qrcode"></i> ماسح أمان رمز QR</h1>
+            <div class="nav-links">
+                <a href="/" class="active"><i class="fas fa-home"></i> الرئيسية</a>
+                <a href="/scan"><i class="fas fa-camera"></i> مسح QR</a>
+                <a href="/manual"><i class="fas fa-link"></i> فحص رابط</a>
+                <a href="#about"><i class="fas fa-info-circle"></i> حول</a>
+            </div>
+        </div>
+    </nav>
+
+    <header class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h2>فحص أمان رموز QR قبل فتحها</h2>
+                <p>أداة متكاملة لفحص وتحليل رموز QR للكشف عن التهديدات الأمنية وحماية خصوصيتك</p>
+                <div class="hero-buttons">
+                    <a href="/scan" class="btn btn-primary">
+                        <i class="fas fa-camera"></i> ابدأ المسح الآن
+                    </a>
+                    <a href="#how-it-works" class="btn btn-secondary">
+                        <i class="fas fa-play-circle"></i> شاهد كيفية العمل
+                    </a>
+                </div>
+            </div>
+            <div class="hero-image">
+                <img src="https://cdn-icons-png.flaticon.com/512/2786/2786065.png" alt="QR Code Security">
+            </div>
+        </div>
+    </header>
+
+    <section class="stats">
+        <div class="container">
+            <div class="stat-card">
+                <i class="fas fa-shield-alt"></i>
+                <h3>{{ stats.total_scans or 0 }}</h3>
+                <p>فحص إجمالي</p>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-check-circle"></i>
+                <h3>{{ stats.safe_scans or 0 }}</h3>
+                <p>روابط آمنة</p>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-exclamation-triangle"></i>
+                <h3>{{ stats.malicious_scans or 0 }}</h3>
+                <p>تهديدات كشفناها</p>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-percentage"></i>
+                <h3>{{ stats.safe_percentage or 0 }}%</h3>
+                <p>معدل الأمان</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="features">
+        <div class="container">
+            <h2 class="section-title">مميزات الماسح</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <i class="fas fa-camera"></i>
+                    <h3>مسح QR بالكاميرا</h3>
+                    <p>مسح رموز QR مباشرة من كاميرا الجهاز بسرعة ودقة</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-upload"></i>
+                    <h3>رفع صورة QR</h3>
+                    <p>رفع صورة رمز QR من الجهاز لفحصه وتحليله</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-link"></i>
+                    <h3>فحص رابط مباشر</h3>
+                    <p>إدخال الرابط يدوياً لفحصه بدون الحاجة لرمز QR</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-shield-alt"></i>
+                    <h3>فحص أمان متعدد المستويات</h3>
+                    <p>فحص شامل باستخدام قواعد بيانات التهديدات العالمية</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-chart-bar"></i>
+                    <h3>تقرير مفصل</h3>
+                    <p>تقرير كامل بنتائج الفحص ونقاط القوة والضعف</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-mobile-alt"></i>
+                    <h3>متوافق مع جميع الأجهزة</h3>
+                    <p>يعمل على الحواسيب والهواتف والأجهزة اللوحية</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="how-it-works" class="how-it-works">
+        <div class="container">
+            <h2 class="section-title">كيف يعمل الماسح؟</h2>
+            <div class="steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <h3>رفع أو مسح رمز QR</h3>
+                    <p>استخدم الكاميرا أو ارفع صورة لرمز QR</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <h3>استخراج الرابط</h3>
+                    <p>يقوم الماسح باستخراج الرابط من رمز QR</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <h3>فحص متعدد الطبقات</h3>
+                    <p>فحص الرابط ضد قواعد بيانات التهديدات العالمية</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <h3>عرض التقرير</h3>
+                    <p>الحصول على تقرير مفصل بمستوى الأمان والتوصيات</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="recent-scans">
+        <div class="container">
+            <h2 class="section-title">آخر الفحوصات</h2>
+            <div class="scans-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>الرابط</th>
+                            <th>درجة الأمان</th>
+                            <th>مستوى الخطورة</th>
+                            <th>الوقت</th>
+                            <th>الإجراء</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for scan in recent_scans %}
+                        <tr>
+                            <td class="url-cell">{{ scan.url[:50] }}{% if scan.url|length > 50 %}...{% endif %}</td>
+                            <td>
+                                <div class="score-badge score-{{ 'high' if scan.security_score >= 70 else 'medium' if scan.security_score >= 40 else 'low' }}">
+                                    {{ scan.security_score }}%
+                                </div>
+                            </td>
+                            <td>
+                                <span class="risk-badge risk-{{ scan.risk_level|lower }}">
+                                    {{ scan.risk_level }}
+                                </span>
+                            </td>
+                            <td>{{ scan.timestamp[:10] }}</td>
+                            <td>
+                                <a href="/report/{{ scan.scan_id }}" class="btn-view">
+                                    <i class="fas fa-eye"></i> عرض
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <section class="cta">
+        <div class="container">
+            <h2>جاهز لفحص رمز QR الخاص بك؟</h2>
+            <p>احمِ نفسك من التهديدات الأمنية قبل فتح أي رابط</p>
+            <div class="cta-buttons">
+                <a href="/scan" class="btn btn-primary btn-large">
+                    <i class="fas fa-camera"></i> ابدأ المسح الآن
+                </a>
+                <a href="/manual" class="btn btn-secondary btn-large">
+                    <i class="fas fa-link"></i> فحص رابط مباشر
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3><i class="fas fa-qrcode"></i> ماسح أمان رمز QR</h3>
+                    <p>أداة متكاملة لفحص وتحليل رموز QR للكشف عن التهديدات الأمنية</p>
+                </div>
+                <div class="footer-section">
+                    <h4>روابط سريعة</h4>
+                    <ul>
+                        <li><a href="/">الرئيسية</a></li>
+                        <li><a href="/scan">مسح QR</a></li>
+                        <li><a href="/manual">فحص رابط</a></li>
+                        <li><a href="#about">حول المشروع</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>اتصل بنا</h4>
+                    <p>للأسئلة والدعم التقني</p>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-github"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-linkedin"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 ماسح أمان رمز QR. جميع الحقوق محفوظة.</p>
+                <p>هذه الأداة للأغراض التعليمية والأمنية فقط.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مسح رمز QR - ماسح أمان رمز QR</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <h1><i class="fas fa-qrcode"></i> ماسح أمان رمز QR</h1>
+            <div class="nav-links">
+                <a href="/"><i class="fas fa-home"></i> الرئيسية</a>
+                <a href="/scan" class="active"><i class="fas fa-camera"></i> مسح QR</a>
+                <a href="/manual"><i class="fas fa-link"></i> فحص رابط</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container scan-container">
+        <div class="scan-header">
+            <h2><i class="fas fa-camera"></i> مسح رمز QR</h2>
+            <p>اختر طريقة المسح التي تفضلها</p>
+        </div>
+
+        <div class="scan-methods">
+            <!-- Camera Scanner -->
+            <div class="scan-method active" id="camera-method">
+                <div class="method-header">
+                    <i class="fas fa-camera"></i>
+                    <h3>المسح بالكاميرا</h3>
+                </div>
+                <div class="method-content">
+                    <div class="scanner-container">
+                        <div id="camera-view" class="camera-view">
+                            <div class="camera-placeholder" id="camera-placeholder">
+                                <i class="fas fa-camera fa-4x"></i>
+                                <p>جاري تحضير الكاميرا...</p>
+                                <button id="start-camera" class="btn btn-primary">
+                                    <i class="fas fa-play"></i> تشغيل الكاميرا
+                                </button>
+                            </div>
+                            <video id="camera-preview" class="camera-preview" style="display: none;"></video>
+                            <canvas id="qr-canvas" style="display: none;"></canvas>
+                        </div>
+                        <div class="scanner-controls">
+                            <button id="toggle-camera" class="btn btn-secondary" style="display: none;">
+                                <i class="fas fa-exchange-alt"></i> تبديل الكاميرا
+                            </button>
+                            <button id="stop-camera" class="btn btn-danger" style="display: none;">
+                                <i class="fas fa-stop"></i> إيقاف الكاميرا
+                            </button>
+                        </div>
+                    </div>
+                    <div id="camera-result" class="scan-result" style="display: none;">
+                        <h4>تم مسح الرابط:</h4>
+                        <div class="result-content" id="camera-result-content"></div>
+                        <div class="result-actions">
+                            <button id="scan-camera-link" class="btn btn-primary">
+                                <i class="fas fa-shield-alt"></i> فحص الأمان
+                            </button>
+                            <button id="clear-camera-result" class="btn btn-secondary">
+                                <i class="fas fa-redo"></i> مسح جديد
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- File Upload -->
+            <div class="scan-method" id="upload-method">
+                <div class="method-header">
+                    <i class="fas fa-upload"></i>
+                    <h3>رفع صورة QR</h3>
+                </div>
+                <div class="method-content">
+                    <div class="upload-area" id="upload-area">
+                        <i class="fas fa-cloud-upload-alt fa-3x"></i>
+                        <p>اسحب وأفلت صورة QR هنا</p>
+                        <p>أو</p>
+                        <input type="file" id="qr-file" accept="image/*" style="display: none;">
+                        <button id="browse-files" class="btn btn-primary">
+                            <i class="fas fa-folder-open"></i> اختر صورة
+                        </button>
+                        <p class="file-info">الملفات المدعومة: PNG, JPG, JPEG, BMP, GIF</p>
+                    </div>
+                    <div id="upload-preview" class="upload-preview" style="display: none;">
+                        <img id="preview-image" src="" alt="Preview">
+                        <button id="remove-image" class="btn btn-danger btn-small">
+                            <i class="fas fa-times"></i> إزالة
+                        </button>
+                    </div>
+                    <div id="upload-result" class="scan-result" style="display: none;">
+                        <h4>تم استخراج الرابط:</h4>
+                        <div class="result-content" id="upload-result-content"></div>
+                        <div class="result-actions">
+                            <button id="scan-upload-link" class="btn btn-primary">
+                                <i class="fas fa-shield-alt"></i> فحص الأمان
+                            </button>
+                            <button id="clear-upload-result" class="btn btn-secondary">
+                                <i class="fas fa-redo"></i> رفع صورة جديدة
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Method Tabs -->
+        <div class="method-tabs">
+            <button class="method-tab active" data-method="camera">
+                <i class="fas fa-camera"></i> الكاميرا
+            </button>
+            <button class="method-tab" data-method="upload">
+                <i class="fas fa-upload"></i> رفع صورة
+            </button>
+        </div>
+
+        <!-- Loading Overlay -->
+        <div id="loading-overlay" class="loading-overlay" style="display: none;">
+            <div class="loading-content">
+                <div class="spinner"></div>
+                <h3>جاري الفحص...</h3>
+                <p id="loading-message">جاري تحليل الرابط وفحص الأمان</p>
+            </div>
+        </div>
+
+        <!-- Results -->
+        <div id="scan-results" class="scan-results" style="display: none;">
+            <h3><i class="fas fa-chart-bar"></i> نتائج الفحص</h3>
+            <div class="results-content" id="results-content"></div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 ماسح أمان رمز QR. جميع الحقوق محفوظة.</p>
+        </div>
+    </footer>
+
+    <!-- Include jsQR library -->
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+    <script src="{{ url_for('static', filename='js/scanner.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

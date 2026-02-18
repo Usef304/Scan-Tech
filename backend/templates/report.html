@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تقرير الفحص - ماسح أمان رمز QR</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <h1><i class="fas fa-qrcode"></i> ماسح أمان رمز QR</h1>
+            <div class="nav-links">
+                <a href="/"><i class="fas fa-home"></i> الرئيسية</a>
+                <a href="/scan"><i class="fas fa-camera"></i> مسح QR</a>
+                <a href="/manual"><i class="fas fa-link"></i> فحص رابط</a>
+                <a href="#" onclick="window.print()"><i class="fas fa-print"></i> طباعة</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container report-container">
+        <!-- Report Header -->
+        <div class="report-header">
+            <div class="report-title">
+                <h2><i class="fas fa-file-alt"></i> تقرير فحص أمان الرابط</h2>
+                <p class="report-date">تاريخ الفحص: {{ report.timestamp[:10] if report.timestamp else 'غير معروف' }}</p>
+            </div>
+            <div class="report-actions">
+                <button onclick="window.print()" class="btn btn-secondary">
+                    <i class="fas fa-print"></i> طباعة التقرير
+                </button>
+                <a href="/" class="btn btn-primary">
+                    <i class="fas fa-redo"></i> فحص جديد
+                </a>
+            </div>
+        </div>
+
+        <!-- Quick Overview -->
+        <div class="quick-overview">
+            <div class="overview-card">
+                <h3>الرابط المفحوص</h3>
+                <p class="url-text">{{ report.url or 'غير متوفر' }}</p>
+            </div>
+            <div class="overview-card">
+                <h3>معرّف الفحص</h3>
+                <p class="scan-id">{{ report.scan_id or 'غير متوفر' }}</p>
+            </div>
+        </div>
+
+        <!-- Security Score -->
+        {% if report.result %}
+        <div class="security-score-section">
+            <h3><i class="fas fa-shield-alt"></i> درجة الأمان الإجمالية</h3>
+            <div class="score-display">
+                {% set score = report.result.security_score|default(0) %}
+                {% set risk_level = report.result.risk_level|default('Unknown')|lower %}
+                <div class="score-circle score-{{ 'high' if score >= 80 else 'medium' if score >= 60 else 'low' if score >= 40 else 'critical' }}">
+                    <span class="score-value">{{ score }}%</span>
+                    <span class="score-label">درجة الأمان</span>
+                </div>
+                <div class="score-details">
+                    <div class="risk-level risk-{{ risk_level }}">
+                        <i class="fas fa-flag"></i>
+                        مستوى الخطورة: {{ report.result.risk_level|default('غير معروف') }}
+                    </div>
+                    <div class="scan-status {{ 'safe' if report.result.is_safe else 'danger' }}">
+                        <i class="fas fa-{{ 'check-circle' if report.result.is_safe else 'exclamation-triangle' }}"></i>
+                        الحالة: {{ 'آمن' if report.result.is_safe else 'خطير' }}
+                    </div>
+                    <div class="scan-time">
+                        <i class="fas fa-clock"></i>
+                        وقت الفحص: {{ report.timestamp[11:19] if report.timestamp else 'غير معروف' }}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Results Grid -->
+        <div class="results-grid">
+            <!-- Threats -->
+            <div class="result-card danger">
+                <div class="card-header">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <h3>التهديدات</h3>
+                </div>
+                <div class="card-content">
+                    {% if report.result and report.result.threats and report.result.threats|length > 0 %}
+                    <ul class="threats-list">
+                        {% for threat in report.result.threats %}
+                        <li>{{ threat }}</li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <p class="no-items">لا توجد تهديدات</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Warnings -->
+            <div class="result-card warning">
+                <div class="card-header">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <h3>التحذيرات</h3>
+                </div>
+                <div class="card-content">
+                    {% if report.result and report.result.warnings and report.result.warnings|length > 0 %}
+                    <ul class="warnings-list">
+                        {% for warning in report.result.warnings %}
+                        <li>{{ warning }}</li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <p class="no-items">لا توجد تحذيرات</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Recommendations -->
+            <div class="result-card success">
+                <div class="card-header">
+                    <i class="fas fa-lightbulb"></i>
+                    <h3>التوصيات</h3>
+                </div>
+                <div class="card-content">
+                    {% if report.result and report.result.recommendations and report.result.recommendations|length > 0 %}
+                    <ul class="recommendations-list">
+                        {% for recommendation in report.result.recommendations %}
+                        <li>{{ recommendation }}</li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <p class="no-items">لا توجد توصيات</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="result-card info">
+                <div class="card-header">
+                    <i class="fas fa-bolt"></i>
+                    <h3>الإجراءات السريعة</h3>
+                </div>
+                <div class="card-content">
+                    <div class="quick-actions">
+                        {% if report.result and not report.result.is_safe %}
+                        <button class="action-btn danger">
+                            <i class="fas fa-ban"></i> تجنب هذا الرابط
+                        </button>
+                        {% endif %}
+                        <button class="action-btn warning" onclick="copyToClipboard('{{ report.url }}')">
+                            <i class="fas fa-copy"></i> نسخ الرابط
+                        </button>
+                        <a href="{{ report.url }}" target="_blank" class="action-btn {{ 'danger' if report.result and not report.result.is_safe else 'primary' }}">
+                            <i class="fas fa-external-link-alt"></i> زيارة الرابط
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detailed Analysis (only if details exist) -->
+        {% if report.result and report.result.details %}
+        <div class="detailed-analysis">
+            <h3><i class="fas fa-chart-bar"></i> التحليل التفصيلي</h3>
+            
+            <!-- Structure Analysis -->
+            {% if report.result.details.structure %}
+            <div class="analysis-section">
+                <h4><i class="fas fa-link"></i> تحليل هيكل الرابط</h4>
+                <div class="analysis-grid">
+                    <div class="analysis-item">
+                        <span class="label">بروتوكول:</span>
+                        <span class="value {{ 'success' if report.result.details.structure.has_https else 'danger' }}">
+                            {{ report.result.details.structure.scheme|upper }}
+                        </span>
+                    </div>
+                    <div class="analysis-item">
+                        <span class="label">نوع الرابط:</span>
+                        <span class="value">
+                            {{ 'رابط مختصر' if report.result.details.structure.is_url_shortener else 'رابط عادي' }}
+                        </span>
+                    </div>
+                    <div class="analysis-item">
+                        <span class="label">الكلمات المشبوهة:</span>
+                        <span class="value {{ 'danger' if report.result.details.structure.has_suspicious_keywords else 'success' }}">
+                            {{ report.result.details.structure.suspicious_keywords_found|length if report.result.details.structure.suspicious_keywords_found else 0 }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- SSL Analysis -->
+            {% if report.result.details.ssl %}
+            <div class="analysis-section">
+                <h4><i class="fas fa-lock"></i> شهادة SSL</h4>
+                <div class="analysis-grid">
+                    <div class="analysis-item">
+                        <span class="label">الحالة:</span>
+                        <span class="value {{ 'success' if report.result.details.ssl.has_ssl else 'danger' }}">
+                            {{ 'نشط' if report.result.details.ssl.has_ssl else 'غير موجود' }}
+                        </span>
+                    </div>
+                    {% if report.result.details.ssl.has_ssl %}
+                    <div class="analysis-item">
+                        <span class="label">ينتهي في:</span>
+                        <span class="value {{ 'warning' if report.result.details.ssl.days_until_expiry < 30 else 'success' }}">
+                            {{ report.result.details.ssl.days_until_expiry }} يوم
+                        </span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Threat Intelligence -->
+            {% if report.result.details.threat_intelligence %}
+            <div class="analysis-section">
+                <h4><i class="fas fa-shield-alt"></i> استخبارات التهديدات</h4>
+                <div class="threat-grid">
+                    {% for source, data in report.result.details.threat_intelligence.items() %}
+                    {% if source != 'overall' %}
+                    <div class="threat-item {{ 'danger' if data.malicious else 'success' }}">
+                        <div class="threat-header">
+                            <i class="fas fa-{{ 'exclamation-triangle' if data.malicious else 'check-circle' }}"></i>
+                            <span class="threat-source">{{ source|replace('_', ' ')|title }}</span>
+                        </div>
+                        <div class="threat-status">
+                            {{ 'ضار' if data.malicious else 'آمن' }}
+                        </div>
+                        {% if data.error %}
+                        <div class="threat-error">{{ data.error }}</div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Headers Analysis -->
+            {% if report.result.details.headers and report.result.details.headers.security_headers %}
+            <div class="analysis-section">
+                <h4><i class="fas fa-code"></i> رؤوس الأمان</h4>
+                <div class="headers-grid">
+                    {% for header, status in report.result.details.headers.security_headers.items() %}
+                    <div class="header-item {{ 'success' if status else 'danger' }}">
+                        <span class="header-name">{{ header|replace('_', ' ')|title }}</span>
+                        <span class="header-status">{{ 'موجود' if status else 'مفقود' }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- Technical Details -->
+        <div class="technical-details">
+            <h3><i class="fas fa-cogs"></i> التفاصيل التقنية</h3>
+            <div class="details-tabs">
+                <button class="tab-btn active" data-tab="raw-data">البيانات الخام</button>
+                <button class="tab-btn" data-tab="api-response">استجابة API</button>
+            </div>
+            <div class="details-content">
+                <div id="raw-data" class="tab-content active">
+                    <pre>{{ report.result|tojson(indent=2) if report.result else '{}' }}</pre>
+                </div>
+                <div id="api-response" class="tab-content">
+                    <pre>{{ report|tojson(indent=2) }}</pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer Actions -->
+        <div class="report-footer">
+            <div class="disclaimer">
+                <p><i class="fas fa-exclamation-circle"></i> <strong>تنبيه:</strong> هذا التقرير للأغراض التعليمية والأمنية فقط. دقة الفحص تعتمد على قواعد البيانات الخارجية وقد لا تكون مطلقة.</p>
+            </div>
+            <div class="footer-actions">
+                <button onclick="downloadReport()" class="btn btn-primary">
+                    <i class="fas fa-download"></i> تحميل التقرير (JSON)
+                </button>
+                <a href="/" class="btn btn-secondary">
+                    <i class="fas fa-home"></i> العودة للرئيسية
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden element for report JSON -->
+    <div id="report-data" style="display: none;">{{ report|tojson|safe }}</div>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 ماسح أمان رمز QR. جميع الحقوق محفوظة.</p>
+            <p>هذه الأداة للأغراض التعليمية والأمنية فقط.</p>
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script>
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(function() {
+                alert('تم نسخ الرابط: ' + text);
+            }, function(err) {
+                alert('خطأ في النسخ: ' + err);
+            });
+        }
+
+        function downloadReport() {
+            const dataElement = document.getElementById('report-data');
+            let data;
+            if (dataElement) {
+                try {
+                    data = JSON.parse(dataElement.textContent);
+                } catch (e) {
+                    data = { report,tojson,safe };
+                }
+            } else {
+                data = { report,tojson,safe };
+            }
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `qr-scan-report-{{ report.scan_id }}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // Tab switching
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const tabId = this.getAttribute('data-tab');
+                
+                // Update active tab button
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                
+                // Show active tab content
+                document.querySelectorAll('.tab-content').forEach(content => {
+                    content.classList.remove('active');
+                });
+                document.getElementById(tabId).classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>
